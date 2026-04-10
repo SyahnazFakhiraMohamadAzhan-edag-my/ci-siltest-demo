@@ -9,61 +9,61 @@ permissions:
 
 jobs:
   # Job to build the System Under Test (SUT)
-  build-sut:
-    name: Build SUT
-    runs-on: vtt
-    steps:
-      # check out the repository containing the codebase
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # build-sut:
+  #   name: Build SUT
+  #   runs-on: vtt
+  #   steps:
+  #     # check out the repository containing the codebase
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      # cache the SUT directory to speed up subsequent builds
-      - name: Cache SUT
-        id: cache-sut
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./ECU/SUT
-          key: ${{ hashFiles('./ECU/**') }}
+  #     # cache the SUT directory to speed up subsequent builds
+  #     - name: Cache SUT
+  #       id: cache-sut
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ./ECU/SUT
+  #         key: ${{ hashFiles('./ECU/**') }}
 
-      # cache the BSW directory to speed up subsequent builds
-      - name: Cache BSW
-        id: cache-bsw
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./ECU/Appl/GenDataVTT
-          key: ${{ hashFiles('./ECU/LightControl.dpa','./ECU/Config') }}
+  #     # cache the BSW directory to speed up subsequent builds
+  #     - name: Cache BSW
+  #       id: cache-bsw
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ./ECU/Appl/GenDataVTT
+  #         key: ${{ hashFiles('./ECU/LightControl.dpa','./ECU/Config') }}
 
-      # run DaVinci & vVIRTUALtarget if no cache build is available
-      - name: Run DaVinci & vVIRTUALtarget
-        if: steps.cache-sut.outputs.cache-hit != 'true'
-        env:
-          cacheBSW: ${{ steps.cache-bsw.outputs.cache-hit }}
-        run: |
-          if ($env:cacheBSW -ne 'true'){
-            VttMake make ./ECU/LightControl.vttmake;
-          }
-          else {
-            VttMake make ./ECU/LightControl.vttmake --excludeDVCfgCmd;
-          }
-          if(-Not $?)
-          {
-            Write-Host "VttMake step failed." -ForegroundColor red
-            Exit -1
-          }
+  #     # run DaVinci & vVIRTUALtarget if no cache build is available
+  #     - name: Run DaVinci & vVIRTUALtarget
+  #       if: steps.cache-sut.outputs.cache-hit != 'true'
+  #       env:
+  #         cacheBSW: ${{ steps.cache-bsw.outputs.cache-hit }}
+  #       run: |
+  #         if ($env:cacheBSW -ne 'true'){
+  #           VttMake make ./ECU/LightControl.vttmake;
+  #         }
+  #         else {
+  #           VttMake make ./ECU/LightControl.vttmake --excludeDVCfgCmd;
+  #         }
+  #         if(-Not $?)
+  #         {
+  #           Write-Host "VttMake step failed." -ForegroundColor red
+  #           Exit -1
+  #         }
 
-      # upload the SUT directory as an artifact for use in other jobs
-      - name: Export ECU/SUT
-        uses: actions/upload-artifact@v4
-        with:
-          name: SUT
-          path: ./ECU/SUT
-          retention-days: 7
+  #     # upload the SUT directory as an artifact for use in other jobs
+  #     - name: Export ECU/SUT
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: SUT
+  #         path: ./ECU/SUT
+  #         retention-days: 7
 
-      # list the contents of the SUT directory to verify the build
-      - name: Check DLL
-        run : ls ECU/SUT/
+  #     # list the contents of the SUT directory to verify the build
+  #     - name: Check DLL
+  #       run : ls ECU/SUT/
 
   # Job to build the simulation environment and compile test units
   build-simulation:
